@@ -21,25 +21,17 @@ def crawl_tang_poems():
 
     id = 1
     for div in div_list:
-        source_list = div.find_all('span')
+        source_list = div.find_all('a')
         for source in source_list:
-            # 获取诗词标题和作者
-            string_source = source.text.strip()
-            try:
-                temp = string_source.split('(')
-                title = temp[0]
-                author = temp[1][:-1]
-            except:
-                title = string_source
-                author = '佚名'
-
+            url = source.get('href')
             # 获取诗词内容
             url_head = 'https://so.gushiwen.cn'
-            content_url = url_head + str(source).split(' ')[1][6:-1]
+            content_url = url_head + url
             content_response = requests.get(content_url)
             content_soup = BeautifulSoup(content_response.text, 'html.parser')
-            content_line = content_soup.find_all('meta')[3]
-            content = content_line.get("content")
+            title = content_soup.find('h1').text
+            author = content_soup.find('p', class_='source').text.strip().split('〔')[0]
+            content = content_soup.find('div', class_='contson').text
 
             poem = {"id": id, "title": title, "content": content, "author": author}
             print(poem)
